@@ -6,6 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Models/Kindergartner/Demo/Kindergartner Demo.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Scenes/MainScene.unity
+    guid: 2f103b91e7f8de540b0593270503fd3c
+  - enabled: 1
+    path: Assets/Scenes/TutorialScene.unity
+    guid: bda84eff61c2e7643b356f5c1053e64b
+  - enabled: 1
+    path: Assets/Scenes/DialogScene.unity
+    guid: 92cfe756cd47d98498f884ae41789082
+  - enabled: 1
+    path: Assets/Scenes/GameScene.unity
+    guid: e57e38615592cd04d9e3642135d74155
+  - enabled: 1
+    path: Assets/Scenes/ScheduleScene.unity
+    guid: 2b34f1acc17628840bdd57ccef5e026c
   m_configObjects: {}

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Ref : https://easings.net/ko
 public static class AnimationExtenstion
 {
     public static float EaseInOutCubic(float x)
@@ -26,10 +27,15 @@ public static class AnimationExtenstion
           : (Mathf.Pow(2, -20 * x + 10) * Mathf.Sin((20 * x - 11.125f) * c5)) / 2 + 1;
     }
 
-    public static float easeInOutCirc(float x)
+    public static float EaseInOutCirc(float x)
     {
         return x < 0.5
             ? (1 - Mathf.Sqrt(1 - Mathf.Pow(2 * x, 2))) / 2
             : (Mathf.Sqrt(1 - Mathf.Pow(-2 * x + 2, 2)) + 1) / 2;
+    }
+
+    public static float EaseInOutSine(float x)
+    {
+        return -(Mathf.Cos(Mathf.PI * x) - 1) / 2;
     }
 }

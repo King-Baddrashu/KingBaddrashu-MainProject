@@ -27,23 +27,19 @@ public class PlayerStatus
 {
     public PlayerValue value
     {
-        get
-        {
-            CaculatePlayerValue();
-            return value;
-        }
-        private set { this.value = value; }
+        get;
+        private set;
     }
         
-    float money;
-    float health;
-    float curHealth;
-    float iq;
-    float apperarance;
-    float morality;
-    float sociality;
-    float sympathy;
-    float stress;
+    [SerializeField] float money;
+    [SerializeField] float health;
+    [SerializeField] float curHealth;
+    [SerializeField] float iq;
+    [SerializeField] float apperarance;
+    [SerializeField] float morality;
+    [SerializeField] float sociality;
+    [SerializeField] float sympathy;
+    [SerializeField] float stress;
 
     public float GetStatusValue(PlayerStatusType type)
     {
@@ -135,7 +131,7 @@ public class PlayerStatus
     }
 }
 
-public struct ActionData
+public class ActionData
 {
     public string script;
     public bool isAction;
@@ -167,14 +163,13 @@ public class PlayerStatusManager : MonoBehaviour
         instance = this;
     }
 
-
     // 행동 수행 여부 - 확률로 처리함
-    // 확률 : (400 - (25~400)) / 4 * 0.5 + (스트레스 수치) * 0.5
-    public ActionData CheckAction(ScheduleManager.BehaviourType type)
+    // 확률 : (400 - (25~400)) / 4 * 0.2 + (스트레스 수치) * 0.8
+    public ActionData CheckAction()
     {
         ActionData actionData = new ActionData();
-        float perValue = ((400f - data.GetPlayerValue()) / 4f) * 0.5f + data.GetStatusValue(PlayerStatusType.STRESS) * 0.5f;
-
+        float perValue = ((400f - data.GetPlayerValue()) / 4f) * 0.2f + (Mathf.Log10(Mathf.Clamp(100 - data.GetStatusValue(PlayerStatusType.STRESS), 10f, 100f)) - 1f) * 80f;
+        print($"perValue : {perValue}");
         float tmpPer = Random.Range(0f, 100f);
 
         if (tmpPer <= perValue)
@@ -182,35 +177,49 @@ public class PlayerStatusManager : MonoBehaviour
             actionData.isAction = true;
 
             actionData.script =
-                excuseScripts[Random.Range(0, excuseScripts.Count - 1)];
+                readyScripts[Random.Range(0, readyScripts.Count - 1)];
         }
         else
         {
-            actionData.isAction = true;
+            actionData.isAction = false;
 
             actionData.script =
-                readyScripts[Random.Range(0, excuseScripts.Count - 1)];
+                excuseScripts[Random.Range(0, excuseScripts.Count - 1)];
         }
 
         return actionData;
     }
 
     // 행동 보상 처리
-    // 처리 방식 : 해당 타입의 고정 보상량 * (스트레스에 따른 성취도(0.2~1.3)), 
+    // 처리 방식 : 해당 타입의 고정 보상량 * (스트레스에 따른 성취도(0.197~1.03)), 
     public float ResultPlayerStatus(ResultData resultDatas)
     {
         float result = 1.0f;
-        if (resultDatas.type != PlayerStatusType.STRESS)
+        if (resultDatas.type != PlayerStatusType.STRESS && resultDatas.type != PlayerStatusType.CUR_HEALTH && resultDatas.type != PlayerStatusType.MONEY)
         {
-            float increaseValue = 1.0f - (Mathf.Log10(Mathf.Clamp(data.GetStatusValue(PlayerStatusType.STRESS), 1.0f, 100f)) / 2);
-            float randomInterval = 0.1f;
-
+            float increaseValue = Mathf.Log10(Mathf.Clamp(100 - data.GetStatusValue(PlayerStatusType.STRESS), 10f, 100f)) - 1f;
+            float randomInterval = 0.03f;
+            increaseValue = Mathf.Clamp(increaseValue, 0.2f, 1.0f);
             float randomIncrease = Random.Range(increaseValue - randomInterval,
                 increaseValue + randomInterval);
-            result = randomIncrease;
+            if (randomIncrease <= 0) randomIncrease = 0f;
+
+            result = resultDatas.value * randomIncrease;
             data.AddStatusValue(resultDatas.type, resultDatas.value * randomIncrease);
         }
+        else
+        {
+            // Stress and current health
+            data.AddStatusValue(resultDatas.type, resultDatas.value);
+            result = resultDatas.value;
+        }
 
+        var input = new ResultData();
+        input.type = resultDatas.type;
+        input.value = result;
+
+        // 보상 기록 진행
+        GameManager.instance.rewardAccumulate.Add(input);
         return result;
     }
 

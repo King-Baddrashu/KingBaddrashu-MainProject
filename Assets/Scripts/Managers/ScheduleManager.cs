@@ -10,13 +10,13 @@ public class ScheduleManager : MonoBehaviour
     [System.Serializable]
     public enum BehaviourType
     {
-        NONE = -1, JOB, GYM, WALK, REST, HOME, MAJOR, STUDY, CLUB
+        NONE = -1, JOB, GYM, WALK, REST, HOME, MAJOR, STUDY, CLUB, EP1=20, EP2, EP3, EP4, EP5, EP6, EP7, EP8, EP9, EP10
     }
 
     [System.Serializable]
     public enum PlaceType
     {
-        NONE = -1, LIBRARY, GYM, STREET, PC, CAFE, HOME, COLLEGE
+        NONE = -1, LIBRARY, GYM, STREET, PC, CAFE, HOME, COLLEGE, EP1, SYW, LSY, HSA, COURT
     }
 
     [System.Serializable]
@@ -48,6 +48,7 @@ public class ScheduleManager : MonoBehaviour
     public Vector3 centerShowPos;
 
     [Header("UI Drag Animation")]
+    public GameObject startBtn;
     public GameObject coverUI;
     public GameObject dragDropUI;
     public bool isDragged;
@@ -55,6 +56,7 @@ public class ScheduleManager : MonoBehaviour
     [Header("UI Schedule Data")]
     public List<GameObject> scheduleFrame;
     public List<BehaviourData> scheduleData;
+    public bool isFull;
 
     private void Awake()
     {
@@ -65,8 +67,8 @@ public class ScheduleManager : MonoBehaviour
     void Start()
     {
         centerShowPos = uiObject[PlaceType.NONE].transform.localPosition * ScreenResolutionExtenstion.GetScreenIncreaseRatioAuto();
-        leftWaitPos = centerShowPos + Vector3.left * offset * ScreenResolutionExtenstion.GetScreenIncreaseRatioAuto();
-        rightWaitPos = centerShowPos + Vector3.right * offset * ScreenResolutionExtenstion.GetScreenIncreaseRatioAuto();
+        leftWaitPos = centerShowPos     + Vector3.left * offset * ScreenResolutionExtenstion.GetScreenIncreaseRatioAuto();
+        rightWaitPos = centerShowPos    + Vector3.right * offset * ScreenResolutionExtenstion.GetScreenIncreaseRatioAuto();
 
         foreach (var obj in uiObject)
         {
@@ -79,6 +81,9 @@ public class ScheduleManager : MonoBehaviour
         }
 
         btnMoveMain.onClick.AddListener(() => { ChangeView(PlaceType.NONE); });
+        ClearSchedule();
+
+        startBtn.GetComponent<Button>().onClick.AddListener(() => { StartAction(); });
     }
 
     // Update is called once per frame
@@ -111,6 +116,9 @@ public class ScheduleManager : MonoBehaviour
             uiObject[prePlace].transform.localPosition = currentShowPos;
 
         coverUI.SetActive(isDragged);
+
+        CollectScheduleData();
+        startBtn.SetActive(isFull);
     }
 
     // 현재 화면에 보일 것을 설정함
@@ -122,11 +130,17 @@ public class ScheduleManager : MonoBehaviour
         else btnMoveMain.interactable = true;
     }
 
-    // 데이터를 정리해서 구함
+    public void StartAction()
+    {
+        GameManager.instance.StartWeak(scheduleData);
+    }
+
+    // 데이터를 정리해서 구 함
     public void CollectScheduleData()
     {
         scheduleData = new List<BehaviourData>();
 
+        int count = 0;
         foreach(var item in scheduleFrame)
         {
             var info = item.transform.GetChild(0).GetComponent<UIBehaviorInfo>();
@@ -137,7 +151,23 @@ public class ScheduleManager : MonoBehaviour
             data.type = info.behaviourType;
             data.placeType = info.placeType;
 
+            if (info.placeType == PlaceType.NONE)
+                count++;
+
             scheduleData.Add(data);
         }
+
+        if (count == 0) isFull = true;
+        else isFull = false;
     }
+
+    public void ClearSchedule()
+    {
+        foreach(var item in scheduleFrame)
+        {
+            var obj = item.transform.GetChild(0).GetComponent<UIBehaviorInfo>();
+            obj.Clear();
+        }
+    }
+
 }

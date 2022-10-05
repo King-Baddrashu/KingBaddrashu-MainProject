@@ -109,6 +109,22 @@ public class UIBehaviorInfo : MonoBehaviour, IPointerClickHandler, IPointerEnter
             isShow = true;
     }
 
+    public void Clear()
+    {
+        Color tmp = cancleInfo.color;
+        tmp.a = 0;
+        cancleInfo.color = tmp;
+
+        tmp = cancleImage.color;
+        tmp.a = 0.3f;
+        cancleImage.color = tmp;
+        
+        this.placeType = ScheduleManager.PlaceType.NONE;
+        this.behaviourType = ScheduleManager.BehaviourType.NONE;
+
+        isShow = false;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         isShow = false;

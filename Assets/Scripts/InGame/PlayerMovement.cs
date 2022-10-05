@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float stopDistance;
     public bool isMoveDone;
     public bool isInteraction;
+    public Vector2 prePos;
+    public Animator anim;
     
 
     // Start is called before the first frame update
@@ -20,6 +22,8 @@ public class PlayerMovement : MonoBehaviour
     {
         tr = GetComponent<Transform>();
         agent = GetComponent<NavMeshAgent>();
+        anim = GetComponent<Animator>();
+
         agent.updateRotation = false;
         agent.updateUpAxis = false;
     }
@@ -27,30 +31,33 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isInteraction) return;
-
-        if(Input.GetMouseButtonDown(0))
-        {
-            Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero, 100f, groundMask);
-
-            if(hit.collider != null)
-            {
-                targetPos = pos;
-                isMoveDone = false;
-            }
-        }
-
-        agent.SetDestination(targetPos);
-
         if(!isMoveDone)
         {
             float dis = Vector3.Distance(tr.position, targetPos);
-
-            if(dis < stopDistance)
+            
+            if (dis < stopDistance)
             {
                 isMoveDone = true;
             }
+
+            if (tr.position.x >= prePos.x)
+                tr.localScale = new Vector3(1, 1, 0);
+            else
+                tr.localScale = new Vector3(-1, 1, 0);
+
+            prePos = transform.position;
+            anim.SetFloat("Speed", 1);
         }
+        else
+        {
+            anim.SetFloat("Speed", 0);
+        }
+    }
+
+    public void MovePos(Vector3 targetPos)
+    {
+        this.targetPos = targetPos;
+        agent.SetDestination(targetPos);
+        isMoveDone = false;
     }
 }
